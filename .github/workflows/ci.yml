@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    [cite_start]branches: [ "**" ] # Se ejecutará al hacer push en cualquier rama [cite: 392-396]
+    branches: ["**"]
 
 jobs:
   lint-and-test:
