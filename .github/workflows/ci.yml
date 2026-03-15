@@ -2,30 +2,40 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    [cite_start]branches: [ "**" ] # Se ejecutará al hacer push en cualquier rama [cite: 392-396]
 
 jobs:
   lint-and-test:
-    runs-on: ubuntu-latest
+    [cite_start]runs-on: ubuntu-latest # Máquina virtual proporcionada por GitHub [cite: 403, 384]
+
     steps:
-      - uses: actions/checkout@v4
+      - [cite_start]uses: actions/checkout@v4 # Descarga tu código en la máquina [cite: 407]
 
       - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          [cite_start]python-version: "3.12" # Versión requerida para la práctica [cite: 468]
 
       - name: Install uv
+        [cite_start]run: pip install uv # Instalamos el gestor de paquetes [cite: 413]
 
       - name: Install dependencies
-
-      - name: Install ruff and mypy
+        [cite_start]run: uv sync # Instala las dependencias de tu proyecto [cite: 416]
 
       - name: Ruff format
+        run: uv run ruff format --check . # Comprueba el formato [cite: 422, 461]
 
       - name: Ruff linter
+        run: uv run ruff check . # Pasa el linter [cite: 425, 460]
 
       - name: Mypy
+        run: uv run mypy . # Comprueba los tipos estáticos [cite: 428]
 
       - name: Unit tests
+        [cite_start]run: uv run pytest core/tests/unit # Tests unitarios [cite: 431, 462]
 
       - name: Integration tests
+        [cite_start]run: uv run pytest core/tests/integration # Tests de integración [cite: 434, 463]
 
       - name: BDD tests
+        [cite_start]run: uv run pytest core/tests/behaviour # Tests de comportamiento [cite: 437, 464]
