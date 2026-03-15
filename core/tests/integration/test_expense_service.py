@@ -110,7 +110,7 @@ def test_remove_expense_reduces_total():
 
     # Se generan dos gastos
     e1 = service.create_expense(title="Libro", amount=20.0, description="Lectura")
-    e2 = service.create_expense(title="Revista", amount=5.0, description="Kiosco")
+    service.create_expense(title="Revista", amount=5.0, description="Kiosco")
 
     # Se elimina el primero
     service.remove_expense(e1.id)
@@ -155,7 +155,7 @@ def test_total_amount_after_removal():
 
     # Se crean dos gastos
     e1 = service.create_expense(title="Cursos", amount=30.0)
-    e2 = service.create_expense(title="Internet", amount=25.0)
+    service.create_expense(title="Internet", amount=25.0)
 
     # Se comprueba la suma inicial
     assert service.total_amount() == 55.0, "La suma inicial debe ser 55.0"
