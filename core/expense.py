@@ -4,6 +4,7 @@ from datetime import date
 from core.domain_error import (
     InvalidAmountError,
     InvalidExpenseDateError,
+    EmptyTitleError,
 )
 
 
@@ -17,8 +18,11 @@ class Expense:
 
     def __post_init__(self):
         """
-        FIXME: Revisen si falta algo que comprobar...
+        Comprobaciones de integridad del dominio.
         """
+        # Cambiamos ValueError por EmptyTitleError
+        if not self.title or not self.title.strip():
+            raise EmptyTitleError("El título del gasto no puede estar vacío")
 
         if self.amount <= 0:
             raise InvalidAmountError("El importe debe ser mayor que 0")

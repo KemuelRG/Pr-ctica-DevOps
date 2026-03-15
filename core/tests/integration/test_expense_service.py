@@ -1,6 +1,7 @@
 from datetime import date
 
 from core.expense_service import ExpenseService
+from core.in_memory_expense_repository import InMemoryExpenseRepository
 from core.no_tocar.sqlite_expense_repository import SQLiteExpenseRepository
 
 
@@ -81,55 +82,86 @@ def test_total_by_month():
 def test_create_multiple_expenses_and_list():
     """
     Verifica que el servicio permite crear múltiples gastos y que estos se almacenan y recuperan correctamente mediante el método list_expenses.
-
-    - Se crea una instancia nueva del servicio de gastos.
-    - Se agregan dos gastos distintos: uno titulado "Pan" con monto 3 y descripción "Mercado", y otro titulado "Leche" con monto 4 y descripción "Supermercado".
-    - Luego, se obtiene el listado de todos los gastos almacenados y se comprueba lo siguiente:
-        - Ambos títulos ("Pan" y "Leche") están presentes en la lista de gastos retornada.
-        - El número total de gastos en el sistema es exactamente dos, lo que verifica que no se sobrescriben ni se duplican registros al crear múltiples gastos.
-    - Este test valida que la función de listado refleja fielmente todos los gastos registrados hasta el momento.
     """
-    ...
+    repo = InMemoryExpenseRepository()
+    service = ExpenseService(repo)
+
+    # Se agregan dos gastos distintos
+    service.create_expense(title="Pan", amount=3.0, description="Mercado")
+    service.create_expense(title="Leche", amount=4.0, description="Supermercado")
+
+    # Se obtiene el listado
+    expenses = service.list_expenses()
+
+    # Comprobaciones
+    assert len(expenses) == 2, "Debe haber exactamente dos gastos en el sistema"
+
+    titles = [expense.title for expense in expenses]
+    assert "Pan" in titles, "El título 'Pan' debe estar en la lista"
+    assert "Leche" in titles, "El título 'Leche' debe estar en la lista"
 
 
 def test_remove_expense_reduces_total():
     """
-    Evalúa el comportamiento del sistema al eliminar un gasto existente:
-
-    - Se generan dos gastos, "Libro" y "Revista", con cantidades distintas.
-    - Se obtienen los gastos actuales y se elimina el primero de ellos utilizando su identificador.
-    - Se verifica lo siguiente tras la eliminación:
-        - Solo queda un gasto en el sistema.
-        - El gasto remanente corresponde efectivamente a "Revista", asegurando que el elemento correcto fue eliminado
-          y que la operación no afecta otros registros.
-    - La prueba valida tanto la integridad de la operación de borrado como la actualización exacta del listado.
+    Evalúa el comportamiento del sistema al eliminar un gasto existente.
     """
-    ...
+    repo = InMemoryExpenseRepository()
+    service = ExpenseService(repo)
+
+    # Se generan dos gastos
+    e1 = service.create_expense(title="Libro", amount=20.0, description="Lectura")
+    e2 = service.create_expense(title="Revista", amount=5.0, description="Kiosco")
+
+    # Se elimina el primero
+    service.remove_expense(e1.id)
+
+    # Se recupera la lista actualizada
+    expenses = service.list_expenses()
+
+    # Comprobaciones
+    assert len(expenses) == 1, "Solo debe quedar un gasto en el sistema"
+    assert expenses[0].title == "Revista", "El gasto restante debe ser 'Revista'"
 
 
 def test_update_expense_partial_fields():
     """
     Comprueba que al actualizar parcialmente un gasto solo cambian los campos especificados y el resto permanece igual.
-
-    - Se crea un gasto titulado "Camiseta" con monto 15 y descripción "Ropa".
-    - Luego, se actualiza únicamente el campo amount, estableciéndolo en 18, usando el ID del gasto.
-    - Finalmente, se recupera el gasto y se verifica lo siguiente:
-        - El campo 'title' permanece igual ("Camiseta").
-        - El campo 'amount' se actualiza correctamente a 18.
-        - El campo 'description' permanece sin cambios ("Ropa").
-    - Este test asegura que el método update_expense respeta la inmutabilidad de los campos no especificados, realizando actualizaciones parciales de manera precisa.
     """
-    ...
+    repo = InMemoryExpenseRepository()
+    service = ExpenseService(repo)
+
+    # Se crea el gasto base
+    expense = service.create_expense(title="Camiseta", amount=15.0, description="Ropa")
+
+    # Se actualiza solo el monto
+    service.update_expense(expense_id=expense.id, amount=18.0)
+
+    # Se recupera el gasto actualizado
+    updated_expense = repo.get_by_id(expense.id)
+
+    # Comprobaciones
+    assert updated_expense is not None
+    assert updated_expense.title == "Camiseta", "El título no debió cambiar"
+    assert updated_expense.amount == 18.0, "El monto debió actualizarse a 18.0"
+    assert updated_expense.description == "Ropa", "La descripción no debió cambiar"
 
 
 def test_total_amount_after_removal():
     """
     Verifica que el cálculo del total gastado se actualiza correctamente después de eliminar un gasto.
-
-    - Se crean dos gastos ("Cursos" por 30 y "Internet" por 25).
-    - Se comprueba que la suma inicial del total es 55.
-    - Se elimina el gasto con id 1 (correspondiente al gasto "Cursos").
-    - Se recalcula el total y se espera que sea 25, reflejando únicamente el monto del gasto aún presente.
-    - Este test valida que el método total_amount refleja los cambios en el sistema ante eliminaciones, manteniendo la consistencia de los datos agregados.
     """
-    ...
+    repo = InMemoryExpenseRepository()
+    service = ExpenseService(repo)
+
+    # Se crean dos gastos
+    e1 = service.create_expense(title="Cursos", amount=30.0)
+    e2 = service.create_expense(title="Internet", amount=25.0)
+
+    # Se comprueba la suma inicial
+    assert service.total_amount() == 55.0, "La suma inicial debe ser 55.0"
+
+    # Se elimina el gasto de "Cursos" (suponiendo que es el primer elemento)
+    service.remove_expense(e1.id)
+
+    # Se recalcula y comprueba el total
+    assert service.total_amount() == 25.0, "La suma tras eliminar debe ser 25.0"
