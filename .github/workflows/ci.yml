@@ -6,36 +6,36 @@ on:
 
 jobs:
   lint-and-test:
-    [cite_start]runs-on: ubuntu-latest # Máquina virtual proporcionada por GitHub [cite: 403, 384]
+    runs-on: ubuntu-latest
 
     steps:
-      - [cite_start]uses: actions/checkout@v4 # Descarga tu código en la máquina [cite: 407]
+      - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          [cite_start]python-version: "3.12" # Versión requerida para la práctica [cite: 468]
+          python-version: "3.12"
 
       - name: Install uv
-        [cite_start]run: pip install uv # Instalamos el gestor de paquetes [cite: 413]
+        run: pip install uv
 
       - name: Install dependencies
-        [cite_start]run: uv sync # Instala las dependencias de tu proyecto [cite: 416]
+        run: uv sync
 
       - name: Ruff format
-        run: uv run ruff format --check . # Comprueba el formato [cite: 422, 461]
+        run: uv run ruff format --check .
 
       - name: Ruff linter
-        run: uv run ruff check . # Pasa el linter [cite: 425, 460]
+        run: uv run ruff check .
 
       - name: Mypy
-        run: uv run mypy . # Comprueba los tipos estáticos [cite: 428]
+        run: uv run mypy .
 
       - name: Unit tests
-        [cite_start]run: uv run pytest core/tests/unit # Tests unitarios [cite: 431, 462]
+        run: uv run pytest core/tests/unit
 
       - name: Integration tests
-        [cite_start]run: uv run pytest core/tests/integration # Tests de integración [cite: 434, 463]
+        run: uv run pytest core/tests/integration
 
       - name: BDD tests
-        [cite_start]run: uv run pytest core/tests/behaviour # Tests de comportamiento [cite: 437, 464]
+        run: uv run pytest core/tests/behaviour
